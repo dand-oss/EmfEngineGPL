@@ -1,30 +1,10 @@
 cmake_minimum_required(VERSION 3.0.0)
 project (emfengine CXX)
+
+set(CMAKE_AUTOMOC ON)
+
 option(BUILD_EXAMPLE "Build the example program" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
-set(SUBDIRS
-    src
-    example)
-foreach(dir ${SUBDIRS})
-    add_subdirectory(${dir})
-endforeach()
-
-#find libemf if this isn't a Windows system
-if(NOT WIN32)
-    find_path(LIBEMF_INCLUDE_DIR 
-        NAMES emf.h
-        PATHS /usr/local/include /usr/include
-    )
-    set(EMFENGINE_INCLUDE_DIRS ${LIBEMF_INCLUDE_DIR} ${LIBEMF_INCLUDE_DIR}/wine)
-    find_library(LIBEMF_LIBRARY
-        NAMES libEMF.a libEMF
-        PATHS /usr/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/
-    )
-    set(EMFENGINE_LIBRARIES ${EMFENGINE_LIBRARIES} ${LIBEMF_LIBRARY})
-else()
-    set(EMFENGINE_LIBRARIES gdi32)
-endif()
 
 #find Qt
 find_package(Qt5 
@@ -37,20 +17,25 @@ find_package(Qt5
      REQUIRED
 )
 
-set(EMFENGINE_INCLUDE_DIRS ${EMFENGINE_INCLUDE_DIRS} 
-    ${Qt5Core_INCLUDE_DIRS}
-    ${Qt5Gui_INCLUDE_DIRS}
-    ${Qt5Svg_INCLUDE_DIRS}
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5PrintSupport_INCLUDE_DIRS})
-set(EMFENGINE_LIBRARIES ${EMFENGINE_LIBRARIES} 
-    ${Qt5Core_LIBRARIES}
-    ${Qt5Gui_LIBRARIES}
-    ${Qt5Svg_LIBRARES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5PrintSupport_LIBRARIES})
-include_directories(${EMFENGINE_INCLUDE_DIRS})
-   
+set(SUBDIRS
+    src
+    example)
+foreach(dir ${SUBDIRS})
+    add_subdirectory(${dir})
+endforeach()
+
+#find libemf if this isn't a Windows system
+if(NOT WIN32)
+    find_port_pkg(emf "EMF")
+    target_link_libraries(${libname} PUBLIC
+        ports:emf
+        )
+else(NOT WIN32)
+    target_link_libraries(${libname} PUBLIC
+        gdi32
+        )
+endif(NOT WIN32)
+
 if (WIN32)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -68,7 +53,9 @@ if(BUILD_EXAMPLE)
         ${EMFENGINE_LIBRARIES}
         emfengine)
 endif()
-target_link_libraries(EmfEngine
-    ${EMFENGINE_LIBRARIES})
+
+target_link_libraries(${libname})
+
 install(FILES src/EmfEngine.h DESTINATION include)
 install(TARGETS EmfEngine LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+

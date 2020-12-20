@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.0.0)
 project (emfengine CXX)
 
+###############
+# ASI default settings
+list(APPEND CMAKE_MODULE_PATH "$ENV{ASV_CMAKE}")
+include(asv_cmake_defaults)
+asv_cmake_defaults( )
+###############
+
+list(APPEND CMAKE_PREFIX_PATH ${AQTDIR})
+set(QT_LIBINFIX "ASV")
 set(CMAKE_AUTOMOC ON)
 
 option(BUILD_EXAMPLE "Build the example program" OFF)
